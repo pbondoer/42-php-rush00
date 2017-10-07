@@ -6,7 +6,7 @@ or die('Can\'t create database db : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
 or die('Can\'t use database db : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS users (
-	id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT UNIQUE,
+	id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	login VARCHAR(50) NOT NULL UNIQUE,
 	password VARCHAR(128) NOT NULL);")
 or die('Can\'t create table users : ' . mysqli_error($mysql));
