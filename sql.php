@@ -1,7 +1,7 @@
 <?php
 
-$mysql = mysql_connect('e1r7p1.42.fr', 'root', 'qwerty123')
-or die('Impossible de se connecter : ' . mysql_error());
+if ($mysql = mysqli_connect('e1r7p1.42.fr', 'root', 'qwerty123') != FALSE)
+ echo 'Impossible de se connecter : ' . mysqli_error();
 
 echo 'connected';
 
