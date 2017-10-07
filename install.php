@@ -1,5 +1,5 @@
 <?PHP
-$mysql = mysqli_connect('e1r7p1.42.fr', 'root', 'qwerty123')
+$mysql = mysqli_connect('localhost', 'root', 'qwerty123')
 or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE DATABASE IF NOT EXISTS db;")
 or die('Can\'t create database db : ' . mysqli_error($mysql));
@@ -21,6 +21,7 @@ mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products_types (
 or die('Can\'t create table product_types : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products (
 	p_id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT UNIQUE,
+	name VARCHAR(50) NOT NULL,
 	path TEXT,
 	price DECIMAL UNSIGNED NOT NULL,
 	discount DECIMAL,
