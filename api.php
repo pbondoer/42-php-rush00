@@ -129,9 +129,16 @@ function add_user($mysql, $login, $passwd)
 		return (encode_ret(TRUE, "Error in creation of user : $login"));
 }
 
-function delete_user($mysql, $login, $passwd)
+function delete_user($mysql, $login, $passwd, $id)
 {
-	if ($login == NULL || $passwd == NULL)
+	if (is_numeric($id) && is_admin($mysql))
+	{
+		if (mysqli_query($mysql, "DELETE FROM users WHERE id = '$id';") !== FALSE)
+			return (encode_ret(FALSE, "User with id : $id deleted"));
+		else
+			return (encode_ret(TRUE, "Can't delete login : $login"));
+	}
+	if ($login == NULL)
 		return (encode_ret(TRUE, "Login or password is empty"));
 	if (mysqli_query($mysql, "DELETE FROM users WHERE login = '$login' AND password = '$passwd';") === TRUE)
 		return (encode_ret(FALSE, "User : $login deleted"));
@@ -234,6 +241,17 @@ function get_list_type($mysql)
 	return ($list_type);
 }
 
+function get_list_user($mysql)
+{
+	if (($list_users_qr = mysqli_query($mysql, "SELECT id, login FROM users")) === FALSE)
+		return (encode_ret(TRUE, "Inpossible de recuperer la liste des users"));
+	$list_users = array();
+	while (($user = mysqli_fetch_assoc($list_users_qr)))
+		$list_users[] = $user;
+	mysqli_free_result($list_users_qr);
+	return ($list_users);
+}
+
 if (($method = $_GET["method"]) != NULL)
 	switch ($method)
 	{
@@ -250,7 +268,7 @@ if (($method = $_GET["method"]) != NULL)
 			$ret = add_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), $_GET["passwd"]);
 			break ;
 		case "del_user":
-			$ret = delete_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]));
+			$ret = delete_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]), $_GET["id"]);
 			break ;
 		case "mod_user":
 			$ret = modify_user($mysql, $_GET["id"], $_GET["new_log"], $_GET["old_pw"], $_GET["new_pw"]);
@@ -270,10 +288,15 @@ if (($method = $_GET["method"]) != NULL)
 		case "get_list_type":
 			$ret = get_list_type($mysql);
 			break ;
+		case "get_list_user":
+			$ret = get_list_user($mysql);
+			break ;
 		default :
 			$ret = encode_ret(TRUE, "method: $method is unknown");
 			break ;
 	}
+else
+	$ret = encode_ret(TRUE, "use method=methode with API");
 mysqli_close($mysql);
 header('Content-Type: application/json');
 echo json_encode($ret);
