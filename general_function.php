@@ -9,6 +9,10 @@ function encode_ret($error, $result)
 
 function array_add($a1, $a2) 
 {
+	if ($a1 == NULL)
+		return ($a2);
+	if ($a2 == NULL)
+		return ($a1);
 	$aRes = $a1;
 	foreach (array_slice(func_get_args(), 1) as $aRay) {
 		foreach (array_intersect_key($aRay, $aRes) as $key => $val) $aRes[$key] += $val;

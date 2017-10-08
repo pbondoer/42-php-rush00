@@ -1,18 +1,19 @@
 <?PHP
 session_start();
 $mysql = mysqli_connect('e1r7p2.42.fr', 'root', 'qwerty123')
-or die('Impossible de se connecter : ' . mysqli_error($mysql));
+	or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
-or die('Impossible de selectionner db : ' . mysqli_error($mysql));
+	or die('Impossible de selectionner db : ' . mysqli_error($mysql));
 mysqli_set_charset($mysql, "\\");
 
 include("general_function.php");
 
 function check_cart()
 {
-	if (!isset($_SESSION['cart']))
+	if (isset($_SESSION['cart']) === FALSE)
 	{
-		$_SESSION['cart'] = serialize(array());
+		echo "fuck\n"
+;		$_SESSION['cart'] = serialize(array());
 	}
 	return (unserialize($_SESSION['cart']));
 }
@@ -34,16 +35,17 @@ function auth($mysql, $login, $passwd)
 	$_SESSION['id_login'] = 0;
 	if ($login === NULL || $passwd === NULL)
 		return (encode_ret(TRUE, "Login or Password is empty"));
-	if (($users = mysqli_query($mysql, "SELECT login, id FROM users WHERE login = '$login' AND password = '$passwd';")) === FALSE)
-	return (encode_ret(TRUE, "Impossible de recuperer la tables des users : ".mysqli_error($mysql)));
+	if (($users = mysqli_query($mysql, "SELECT * FROM users WHERE login = '$login' AND password = '$passwd';")) === FALSE)
+		return (encode_ret(TRUE, "Impossible de recuperer la tables des users : ".mysqli_error($mysql)));
 	if ($users->num_rows === 1)
 	{
 		$usr = mysqli_fetch_assoc($users);
 		$_SESSION['login'] = $login;
 		$_SESSION['id_login'] = $usr["id"];
-		$_SESSION['cart'] = init_auth_cart($mysql, $usr["id"]);
+//		$_SESSION['cart'] = serialize(init_auth_cart($mysql, $usr["id"]));
+		unset($usr["password"]);
 		mysqli_free_result($users);
-		return (encode_ret(FALSE, $login));
+		return (encode_ret(FALSE, $usr));
 	}
 	return (encode_ret(TRUE, "Login or password is wrong"));
 }
@@ -55,10 +57,12 @@ function cart($mysql)
 	foreach ($cart as $key => $product)
 	{
 		$pid = $product["id"];
-		$new = mysqli_query($mysql, "SELECT * FROM products WHERE p_id = $pid;");
-		$new = mysqli_fetch_assoc($new);
-		$new["count"] = $product["count"];
-		$cart_with_info[$key] = $new;
+		if (($new = mysqli_query($mysql, "SELECT * FROM products WHERE p_id = $pid;")) !== FALSE)
+		{
+			$new = mysqli_fetch_assoc($new);
+			$new["count"] = $product["count"];
+			$cart_with_info[$key] = $new;
+		}
 	}
 	return (encode_ret(FALSE, $cart_with_info));
 }
@@ -93,7 +97,7 @@ function edit_cart($mysql, $pid, $change)
 		return (encode_ret(FALSE, ""));
 	}
 	$cart = check_cart();
-//	var_dump($cart);
+	//	var_dump($cart);
 	foreach ($cart as $key => &$product)
 	{
 		if ($product["id"] === $pid)
@@ -101,9 +105,9 @@ function edit_cart($mysql, $pid, $change)
 			if ($change == 0 || ($product["count"] + $change <= 0))
 				unset($cart[$key]);
 			else if ($product["count"] + $change > ($max_stock = stock_id($mysql, $pid)))
-					$product["count"] = $max_stock;
+				$product["count"] = $max_stock;
 			else
-					$product["count"] += $change;
+				$product["count"] += $change;
 			$change = -1;
 			break ;
 		}
@@ -126,7 +130,14 @@ function add_user($mysql, $login, $passwd)
 	if ($user_exist->num_rows > 0)
 		return (encode_ret(TRUE, "$login already exist"));
 	if (mysqli_query($mysql, "INSERT INTO users (login, password) VALUES ('$login', '$passwd');") === TRUE)
-		return (encode_ret(FALSE, "$login created"));
+	{
+		if (($info = mysqli_query($mysql, "SELECT * FROM users WHERE login = $$login;")) === FALSE)
+			return (encode_ret(TRUE, "Error in login"));
+		$user = mysqli_fetch_assoc($info);
+		unset($user["password"]);
+		mysqli_free_result($info);
+		return (encode_ret(FALSE, $user));
+	}
 	else
 		return (encode_ret(TRUE, "Error in creation of user : $login"));
 }
@@ -189,7 +200,7 @@ function modify_user($mysql, $id, $new_log, $old_pw, $new_pw)
 			return (encode_ret(TRUE, "Wrong password"));
 	}
 	else
-			return (encode_ret(TRUE, "Password is empty"));
+		return (encode_ret(TRUE, "Password is empty"));
 	if ($ok === 1)
 	{
 		if ($new_log != NULL)
@@ -257,45 +268,45 @@ function get_list_user($mysql)
 if (($method = $_GET["method"]) != NULL)
 	switch ($method)
 	{
-		case "auth":
-			$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]));
-			break ;
-		case "cart":
-			$ret = cart($mysql);
-			break ;
-		case "edit_cart":
-			$ret = edit_cart($mysql, $_GET["pid"], $_GET["change"]);
-			break ;
-		case "add_user":
-			$ret = add_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), $_GET["passwd"]);
-			break ;
-		case "del_user":
-			$ret = delete_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]), $_GET["id"]);
-			break ;
-		case "mod_user":
-			$ret = modify_user($mysql, $_GET["id"], $_GET["new_log"], $_GET["old_pw"], $_GET["new_pw"]);
-			break ;
-		case "get_stock":
-			$ret = get_stock($mysql, $_GET["pid"]);
-			break ;
-		case "get_pinfo":
-			$ret = get_pinfo($mysql, $_GET["pid"]);
-			break ;
-		case "get_uinfo":
-			$ret = get_uinfo($mysql, $_GET["id"]);
-			break ;
-		case "get_product":
-			$ret = get_product($mysql, $_GET["type"], $_GET["start"], $_GET["len"]);
-			break ;
-		case "get_list_type":
-			$ret = get_list_type($mysql);
-			break ;
-		case "get_list_user":
-			$ret = get_list_user($mysql);
-			break ;
-		default :
-			$ret = encode_ret(TRUE, "method: $method is unknown");
-			break ;
+	case "auth":
+		$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]));
+		break ;
+	case "cart":
+		$ret = cart($mysql);
+		break ;
+	case "edit_cart":
+		$ret = edit_cart($mysql, $_GET["pid"], $_GET["change"]);
+		break ;
+	case "add_user":
+		$ret = add_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), $_GET["passwd"]);
+		break ;
+	case "del_user":
+		$ret = delete_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]), $_GET["id"]);
+		break ;
+	case "mod_user":
+		$ret = modify_user($mysql, $_GET["id"], $_GET["new_log"], $_GET["old_pw"], $_GET["new_pw"]);
+		break ;
+	case "get_stock":
+		$ret = get_stock($mysql, $_GET["pid"]);
+		break ;
+	case "get_pinfo":
+		$ret = get_pinfo($mysql, $_GET["pid"]);
+		break ;
+	case "get_uinfo":
+		$ret = get_uinfo($mysql, $_GET["id"]);
+		break ;
+	case "get_product":
+		$ret = get_product($mysql, $_GET["type"], $_GET["start"], $_GET["len"]);
+		break ;
+	case "get_list_type":
+		$ret = get_list_type($mysql);
+		break ;
+	case "get_list_user":
+		$ret = get_list_user($mysql);
+		break ;
+	default :
+		$ret = encode_ret(TRUE, "method: $method is unknown");
+		break ;
 	}
 else
 	$ret = encode_ret(TRUE, "use method=methode with API");
