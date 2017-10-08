@@ -30,16 +30,16 @@ function auth($mysql, $login, $passwd)
 {
 	$_SESSION['login'] = NULL;
 	$_SESSION['id_login'] = 0;
-	if ($login == NULL || $passwd == NULL)
+	if ($login === NULL || $passwd === NULL)
 		return (encode_ret(TRUE, "Login or Password is empty"));
-	$users = mysqli_query($mysql, "SELECT login, id FROM users WHERE login = '$login' AND password = '$passwd';")
-	or die ('Impossible de recuperer la tables des users : ' . mysqli_error($mysql));
+	if (($users = mysqli_query($mysql, "SELECT login, id FROM users WHERE login = '$login' AND password = '$passwd';")) === FALSE)
+	return (encode_ret(TRUE, "Impossible de recuperer la tables des users : ".mysqli_error($mysql)));
 	if ($users->num_rows === 1)
 	{
 		$usr = mysqli_fetch_assoc($users);
 		$_SESSION['login'] = $login;
 		$_SESSION['id_login'] = $usr["id"];
-//		$_SESSION['cart'] = init_auth_cart($mysql, $usr["id"]);
+		$_SESSION['cart'] = init_auth_cart($mysql, $usr["id"]);
 		mysqli_free_result($users);
 		return (encode_ret(FALSE, $login));
 	}
@@ -223,6 +223,17 @@ function get_product($mysql, $type, $start, $len)
 	return(encode_ret(FALSE, $list_products));
 }
 
+function get_list_type($mysql)
+{
+	if (($list_type_qr = mysqli_query($mysql, "SELECT * FROM products_types")) === FALSE)
+		return (encode_ret(TRUE, "Inpossible de recuperer la liste des categories"));
+	$list_type = array();
+	while (($type = mysqli_fetch_assoc($list_type_qr)))
+		$list_type[] = $type;
+	mysqli_free_result($list_type_qr);
+	return ($list_type);
+}
+
 if (($method = $_GET["method"]) != NULL)
 	switch ($method)
 	{
@@ -255,6 +266,9 @@ if (($method = $_GET["method"]) != NULL)
 			break ;
 		case "get_product":
 			$ret = get_product($mysql, $_GET["type"], $_GET["start"], $_GET["len"]);
+			break ;
+		case "get_list_type":
+			$ret = get_list_type($mysql);
 			break ;
 		default :
 			$ret = encode_ret(TRUE, "method: $method is unknown");
