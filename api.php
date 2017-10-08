@@ -21,6 +21,24 @@ function array_add($a1, $a2)
 	return $aRes;
 }
 
+function check_cart()
+{
+	if ($_SESSION['cart'] == NULL)
+		$_SESSION['cart'] = serialize(array());
+	return (unserialize($_SESSION['cart']));
+}
+
+function is_admin($mysql)
+{
+	if (($id = $_SESSION["id_login"]) === 0)
+		return (FALSE);
+	$user = mysqli_query($mysql, "SELECT * FROM users WHERE id = $id AND admin = 1;");
+	if ($user->num_rows === 1)
+		return (TRUE);
+	else
+		return (FALSE);
+}
+
 function init_auth_cart($mysql, $uid)
 {
 	$no_auth_cart = check_cart();
@@ -50,13 +68,6 @@ function auth($mysql, $login, $passwd)
 		return (encode_ret(FALSE, $login));
 	}
 	return (encode_ret(TRUE, "Login or password is wrong"));
-}
-
-function check_cart()
-{
-	if ($_SESSION['cart'] == NULL)
-		$_SESSION['cart'] = serialize(array());
-	return (unserialize($_SESSION['cart']));
 }
 
 function cart($mysql)
@@ -175,11 +186,64 @@ function get_uinfo($mysql, $id)
 	return (encode_ret(FALSE, $user));
 }
 
+function modify_user($mysql, $id, $new_log, $old_pw, $new_pw)
+{
+	if ($_SESSION['id_login'] === 0)
+		return (encode_ret(TRUE, "You must be logged"));
+	$ok = 0;
+	if ($id !== 0 && $old_pw == NULL && is_admin($_SESSION['id_login']) === TRUE)
+		$ok = 1;
+	else if ($old_pw != NULL)
+	{
+		$id = $_SESSION['id_login'];
+		$old_pw = hash("whirlpool", $old_pw);
+		$user = mysqli_query($mysql, "SELECT * FROM users WHERE id = $id AND password = '$old_pw';");
+		if ($user->num_rows === 1)
+			$ok = 1;
+		else
+			return (encode_ret(TRUE, "Wrong password"));
+	}
+	else
+			return (encode_ret(TRUE, "Password is empty"));
+	if ($ok === 1)
+	{
+		if ($new_log != NULL)
+		{
+			$new_log = mysqli_real_escape_string($new_log);
+			$user = mysqli_query($mysql, "SELECT * FROM users WHERE login = '$new_log';");
+			if ($user->num_rows !== 0)
+				return (encode_ret(TRUE, "$new_log already exist"));
+			else
+				mysqli_query($mysql, "UPDATE users SET login = '$new_log' WHERE id = '$id';");
+		}
+		if ($old_pw != NULL)
+		{
+			$new_pw = hash("whirlpool", $new_pw);
+			mysqli_query($mysql, "UPDATE users SET password = '$new_pw' WHERE id = '$id';");
+		}
+		return (encode_ret(FALSE, ""));
+	}
+	return (encode_ret(TRUE, "you can't modify user"));
+}
+
+function get_product($mysql, $type, $start, $len)
+{
+	if (!is_numeric($start) || !is_numeric($len) || $start < 0 || $len < 0)
+		return (encode_ret(TRUE, "$start or $len is not an valide number"));
+	$len = $start + $len;
+	if (($list_products_qr = mysqli_query($mysql, "SELECT * FROM products WHERE p_id BETWEEN $start AND $len;")) === FALSE)
+		return (encode_ret(TRUE, "Can't select products"));
+	$list_products = array();
+	while ($list_products[] = mysqli_fetch_assoc($list_products_qr));
+	mysqli_free_result($list_products_qr);
+	return(encode_ret(FALSE, $list_products));
+}
+
 if (($method = $_GET["method"]) != NULL)
 	switch ($method)
 	{
 		case "auth":
-			$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"])); // Rajouter hash du mot de passe
+			$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]));
 			break ;
 		case "cart":
 			$ret = cart($mysql);
@@ -193,6 +257,9 @@ if (($method = $_GET["method"]) != NULL)
 		case "del_user":
 			$ret = delete_user($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]));
 			break ;
+		case "mod_user":
+			$ret = modify_user($mysql, $_GET["id"], $_GET["new_log"], $_GET["old_pw"], $_GET["new_pw"]);
+			break ;
 		case "get_stock":
 			$ret = get_stock($mysql, $_GET["pid"]);
 			break ;
@@ -202,11 +269,14 @@ if (($method = $_GET["method"]) != NULL)
 		case "get_uinfo":
 			$ret = get_uinfo($mysql, $_GET["id"]);
 			break ;
+		case "get_product":
+			$ret = get_product($mysql, $_GET["type"], $_GET["start"], $_GET["len"]);
+			break ;
 		default :
-			$ret = FALSE;
+			$ret = encode_ret(TRUE, "method: $method is unknown");
 			break ;
 	}
 mysqli_close($mysql);
-header("Content-Type: text/json");
+header('Content-Type: application/json');
 echo json_encode($ret);
 ?>
