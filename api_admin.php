@@ -1,9 +1,9 @@
 <?PHP
 session_start();
-$mysql = mysqli_connect('e1r7p2.42.fr', 'root', 'qwerty123')
-or die('Impossible de se connecter : ' . mysqli_error($mysql));
+$mysql = mysqli_connect('localhost', 'root', 'qwerty123')
+	or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
-or die('Impossible de selectionner db : ' . mysqli_error($mysql));
+	or die('Impossible de selectionner db : ' . mysqli_error($mysql));
 mysqli_set_charset($mysql, "\\");
 
 include("general_function.php");
@@ -59,7 +59,7 @@ function mod_product($mysql, $p_id, $name, $path, $price, $discount, $stock, $de
 	if ($qr->num_rows !== 1)
 		return (encode_ret(TRUE, "Id : $p_id don't exist"));
 	if ($types != NULL)
-	add_type_for_product($mysql, $p_id, $types);
+		add_type_for_product($mysql, $p_id, $types);
 	if (mysqli_query($mysql, "UPDATE products SET name = '$name', path = '$path', price = $price, discount = $discount, stock = $stock, description = '$desc', variants = '$variants'  WHERE p_id = $p_id") !== TRUE)
 		return (encode_ret(TRUE, "Can't update id : $p_id : ".mysqli_error($mysql)));
 	return (encode_ret(FALSE, "Update id : $p_id succesfully"));
@@ -67,24 +67,33 @@ function mod_product($mysql, $p_id, $name, $path, $price, $discount, $stock, $de
 }
 
 if (($method = $_GET["method"]) != NULL) //Add protection is_admin
-	switch ($method)
+{
+	if (is_admin($mysql))
 	{
-	case "modify_cat":
-		$ret = modify_cat($mysql, $_GET["p_type"], mysqli_real_escape_string($mysql, $_GET["name"]));
-		break ;
-	case "add_cat":
-		$ret = add_cat($mysql, mysqli_real_escape_string($mysql, $_GET["name"]));
-		break ;
-	case "del_cat":
-		$ret = del_cat($mysql, $_GET["p_type"]);
-		break ;
-	case "mod_prod":
-		$ret = mod_product($mysql, $_GET["p_id"], $_GET["name"], $_GET["path"], $_GET["price"], $_GET["discount"], $_GET["stock"], $_GET["desc"], $_GET["variants"], $_GET["types"]);
-		break ;
-	default :
-		$ret = encode_ret(TRUE, "method: $method is unknown");
-		break ;
+		switch ($method)
+		{
+		case "modify_cat":
+			$ret = modify_cat($mysql, $_GET["p_type"], mysqli_real_escape_string($mysql, $_GET["name"]));
+			break ;
+		case "add_cat":
+			$ret = add_cat($mysql, mysqli_real_escape_string($mysql, $_GET["name"]));
+			break ;
+		case "del_cat":
+			$ret = del_cat($mysql, $_GET["p_type"]);
+			break ;
+		case "mod_prod":
+			$ret = mod_product($mysql, $_GET["p_id"], $_GET["name"], $_GET["path"], $_GET["price"], $_GET["discount"], $_GET["stock"], $_GET["desc"], $_GET["variants"], $_GET["types"]);
+			break ;
+		default :
+			$ret = encode_ret(TRUE, "method: $method is unknown");
+			break ;
+		}
 	}
+	else
+		$ret = encode_ret(TRUE, "You are not authorized");
+}
+else
+	$ret = encode_ret(TRUE, "use method=methode with API");
 
 mysqli_close($mysql);
 header('Content-Type: application/json');
