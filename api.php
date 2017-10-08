@@ -1,6 +1,6 @@
 <?PHP
 session_start();
-$mysql = mysqli_connect('e1r7p2.42.fr', 'root', 'qwerty123')
+$mysql = mysqli_connect('localhost', 'root', 'qwerty123')
 	or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
 	or die('Impossible de selectionner db : ' . mysqli_error($mysql));
@@ -25,6 +25,7 @@ function init_auth_cart($mysql, $uid)
 		$auth_cart = mysqli_fetch_assoc($auth_cart_qr);
 	else
 		$auth_cart = array();
+	print_r($auth_cart);
 	return (array_add($no_auth_cart, $auth_cart));
 }
 
