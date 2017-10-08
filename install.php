@@ -19,7 +19,7 @@ mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS buy_history (
 	count INT UNSIGNED NOT NULL);")
 or die('Can\'t create table buy_history : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products_types (
-	p_types INT UNSIGNED PRIMARY KEY AUTO_INCREMENT UNIQUE,
+	p_types INT NOT NULL UNSIGNED PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	type VARCHAR(50));")
 or die('Can\'t create table product_types : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products (
@@ -36,6 +36,10 @@ mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS statistics (
 	p_id INT UNSIGNED NOT NULL,
 	id_users INT UNSIGNED,
 	price DECIMAL UNSIGNED);")
+or die('Can\'t create table statistics : ' . mysqli_error($mysql));
+mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS product_cat (
+	p_id INT UNSIGNED NOT NULL,
+	p_types INT UNSIGNED NOT NULL);")
 or die('Can\'t create table statistics : ' . mysqli_error($mysql));
 $admin_pass = hash("whirlpool", "admin");
 mysqli_query($mysql, "INSERT INTO users (login, admin, password) VALUES ('admin', 1, '$admin_pass');")

@@ -5,38 +5,13 @@ or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
 or die('Impossible de selectionner db : ' . mysqli_error($mysql));
 
-function encode_ret($error, $result)
-{
-	$ret = array("error" => $error,
-			"result" => $result);
-	return ($ret);
-}
-
-function array_add($a1, $a2) 
-{
-	$aRes = $a1;
-	foreach (array_slice(func_get_args(), 1) as $aRay) {
-		foreach (array_intersect_key($aRay, $aRes) as $key => $val) $aRes[$key] += $val;
-			$aRes += $aRay; }
-	return $aRes;
-}
+include("general_function.php");
 
 function check_cart()
 {
 	if ($_SESSION['cart'] == NULL)
 		$_SESSION['cart'] = serialize(array());
 	return (unserialize($_SESSION['cart']));
-}
-
-function is_admin($mysql)
-{
-	if (($id = $_SESSION["id_login"]) === 0)
-		return (FALSE);
-	$user = mysqli_query($mysql, "SELECT * FROM users WHERE id = $id AND admin = 1;");
-	if ($user->num_rows === 1)
-		return (TRUE);
-	else
-		return (FALSE);
 }
 
 function init_auth_cart($mysql, $uid)
@@ -234,7 +209,8 @@ function get_product($mysql, $type, $start, $len)
 	if (($list_products_qr = mysqli_query($mysql, "SELECT * FROM products WHERE p_id BETWEEN $start AND $len;")) === FALSE)
 		return (encode_ret(TRUE, "Can't select products"));
 	$list_products = array();
-	while ($list_products[] = mysqli_fetch_assoc($list_products_qr));
+	while (($products = mysqli_fetch_assoc($list_products_qr)))
+		$list_products[] = $products;
 	mysqli_free_result($list_products_qr);
 	return(encode_ret(FALSE, $list_products));
 }
