@@ -8,11 +8,14 @@ or die('Can\'t use database db : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS users (
 	id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	login VARCHAR(50) NOT NULL UNIQUE,
+	cart TEXT,
+	admin INT DEFAULT 0,
 	password VARCHAR(128) NOT NULL);")
 or die('Can\'t create table users : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS buy_history (
 	id_user INT UNSIGNED NOT NULL,
 	product_id INT UNSIGNED NOT NULL,
+	cart_id INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
 	count INT UNSIGNED NOT NULL);")
 or die('Can\'t create table buy_history : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products_types (
@@ -34,5 +37,8 @@ mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS statistics (
 	id_users INT UNSIGNED,
 	price DECIMAL UNSIGNED);")
 or die('Can\'t create table statistics : ' . mysqli_error($mysql));
+$admin_pass = hash("whirlpool", "admin");
+mysqli_query($mysql, "INSERT INTO users (login, admin, password) VALUES ('admin', 1, '$admin_pass');")
+or die('Can\'t create admin user : ' . mysqli_error($mysql));
 mysqli_close($mysql);
 ?>
