@@ -12,7 +12,6 @@ function check_cart()
 {
 	if (isset($_SESSION['cart']) === FALSE)
 	{
-		echo "fuck\n"
 ;		$_SESSION['cart'] = serialize(array());
 	}
 	return (unserialize($_SESSION['cart']));
@@ -97,7 +96,6 @@ function edit_cart($mysql, $pid, $change)
 		return (encode_ret(FALSE, ""));
 	}
 	$cart = check_cart();
-	//	var_dump($cart);
 	foreach ($cart as $key => &$product)
 	{
 		if ($product["id"] === $pid)
