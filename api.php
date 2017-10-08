@@ -8,7 +8,7 @@ or die('Impossible de selectionner db : ' . mysqli_error($mysql));
 function encode_ret($error, $result)
 {
 	$ret = array("error" => $error,
-			"resultat" => $result);
+			"result" => $result);
 	return ($ret);
 }
 
@@ -26,13 +26,13 @@ function init_auth_cart($mysql, $uid)
 	$no_auth_cart = check_cart();
 	$auth_cart_qr = mysqli_query($mysql, "SELECT cart FROM users WHERE id = $uid");
 	if ($auth_cart_qr->num_rows === 1)
-		$auth_cart = mysqli_fetch_assoc(auth_cart_qr);
+		$auth_cart = mysqli_fetch_assoc($auth_cart_qr);
 	else
 		$auth_cart = array();
 	return (array_add($no_auth_cart, $auth_cart));
 }
 
-function auth($mysql, $login, $passwd, $cart)
+function auth($mysql, $login, $passwd)
 {
 	$_SESSION['login'] = NULL;
 	$_SESSION['id_login'] = 0;
@@ -179,7 +179,7 @@ if (($method = $_GET["method"]) != NULL)
 	switch ($method)
 	{
 		case "auth":
-			$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"]), $_GET["cart"]); // Rajouter hash du mot de passe
+			$ret = auth($mysql, mysqli_real_escape_string($mysql, $_GET["login"]), hash("whirlpool", $_GET["passwd"])); // Rajouter hash du mot de passe
 			break ;
 		case "cart":
 			$ret = cart($mysql);
