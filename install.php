@@ -19,14 +19,14 @@ mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS buy_history (
 	count INT UNSIGNED NOT NULL);")
 or die('Can\'t create table buy_history : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products_types (
-	p_types INT NOT NULL UNSIGNED PRIMARY KEY AUTO_INCREMENT UNIQUE,
+	p_types INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	type VARCHAR(50));")
 or die('Can\'t create table product_types : ' . mysqli_error($mysql));
 mysqli_query($mysql, "CREATE TABLE IF NOT EXISTS products (
 	p_id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	name VARCHAR(50) NOT NULL,
 	path TEXT,
-	price DECIMAL UNSIGNED NOT NULL,
+	price DECIMAL(10,2) UNSIGNED NOT NULL,
 	discount DECIMAL,
 	stock INT UNSIGNED,
 	description TEXT,

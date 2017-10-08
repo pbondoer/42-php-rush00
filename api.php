@@ -4,6 +4,7 @@ $mysql = mysqli_connect('e1r7p2.42.fr', 'root', 'qwerty123')
 or die('Impossible de se connecter : ' . mysqli_error($mysql));
 mysqli_query($mysql, "USE db;")
 or die('Impossible de selectionner db : ' . mysqli_error($mysql));
+mysqli_set_charset($mysql, "\\");
 
 include("general_function.php");
 
@@ -205,9 +206,16 @@ function get_product($mysql, $type, $start, $len)
 {
 	if (!is_numeric($start) || !is_numeric($len) || $start < 0 || $len < 0)
 		return (encode_ret(TRUE, "$start or $len is not an valide number"));
-	$len = $start + $len;
-	if (($list_products_qr = mysqli_query($mysql, "SELECT * FROM products WHERE p_id BETWEEN $start AND $len;")) === FALSE)
-		return (encode_ret(TRUE, "Can't select products"));
+	if ($type == NULL)
+	{
+		if (($list_products_qr = mysqli_query($mysql, "SELECT * FROM products LIMIT $start, $len;")) === FALSE)
+			return (encode_ret(TRUE, "Can't select products"));
+	}
+	else
+	{
+		if (($list_products_qr = mysqli_query($mysql, "SELECT t1.p_id, t1.name, t1.path, t1.price, t1.stock, t1.description, t1.variants, t3.type FROM products AS t1 INNER JOIN product_cat AS t2 ON t1.p_id = t2.p_id INNER JOIN products_types AS t3 ON t2.p_types = t3.p_types WHERE t2.p_types = $type;")) === FALSE)
+			return (encode_ret(TRUE, "Can't select products with type : $type"));
+	}
 	$list_products = array();
 	while (($products = mysqli_fetch_assoc($list_products_qr)))
 		$list_products[] = $products;
