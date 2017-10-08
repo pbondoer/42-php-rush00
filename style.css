@@ -1,3 +1,4 @@
+/* TODO: better css handling with async */
 @import url('https://fonts.googleapis.com/css?family=Lato:100,300,400,700');
 
 body, html {
@@ -13,33 +14,48 @@ body > * {
 	width: 100%;
 }
 
-#header {
-	background-color: #372574;
+a {
+	color: #F37402;
+}
+
+a:active,
+a:hover {
+	color: #F2B809;
+}
+
+a:visited {
+	color: #F34605;
+}
+
+header {
+	background-color: #03275A;
 	color: rgba(255, 255, 255, 0.8);
 
 	display: flex;
 	flex-direction: column;
 }
 
-#header #top {
+header .top {
 	font-size: 2em;
 	font-weight: 100;
 	padding: 0.5em;
 	text-align: center;
 }
 
-#header nav {
+header nav {
 	display: flex;
 	justify-content: space-between;
 
-	background-color: rgba(0, 0, 0, 0.4);
+	background-color: rgba(26, 125, 215, 0.1);
 }
 
-#header nav > div {
+header nav > div {
 	display: flex;
 }
 
-#header a {
+header a,
+header a:active,
+header a:visited {
 	color: rgba(255, 255, 255, 0.9);
 	display: block;
 	font-size: 1.25em;
@@ -47,30 +63,31 @@ body > * {
 	font-weight: 300;
 	text-decoration: none;
 }
-#header a:hover {
+header a:hover {
 	color: rgba(255, 255, 255, 1);
 }
 
-#header a.selected {
+header a.selected {
 	font-weight: 400;
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: rgba(26, 125, 215, 0.3);
 }
 
-#container {
+.container {
 	display: flex;
 }
 
-#container #sidebar {
+.container .sidebar {
 	width: 20%;
+	min-width: 200px;
 	height: 100%;
 	padding: 1em;
 
 	display: flex;
 	flex-direction: column;
-	background-color: rgba(0, 0, 0, 0.1);
+	background-color: #FFF;
 }
 
-#container #sidebar h1 {
+.container .sidebar h1 {
 	margin-top: 1em;
 	margin-bottom: 1em;
 	font-size: 1.25em;
@@ -78,19 +95,188 @@ body > * {
 	border-bottom: 1px solid;
 }
 
-#container #sidebar h1:first-child {
+.container .sidebar h1:first-child {
 	margin-top: 0;
 }
 
-#container #sidebar a {
-	color: #009;
+.container .sidebar a {
+	padding: 0.5em;
+	display: block;
+}
+
+.container .main {
+	flex-grow: 1;
+	min-height: 100%;
+}
+
+.carousel {
+	background-image: url('http://webservices.francetelevisions.fr/staticftv/images_pdm_ni//2017-03-03/NI_935147_1488553121_1488553130_550.jpg');
+	background-position: top 2% right;
+	background-repeat: no-repeat;
+	background-size: cover;
+	height: 28vw;
+	min-height: 200px;
+
+	position: relative;
+	overflow: hidden;
+}
+
+.carousel .info {
+	position: absolute;
+
+	bottom: 2em;
+	left: 2em;
+	right: 2em;
+}
+
+.carousel .info > * {
+	color: white;
+	padding: 0.1em;
+	margin: 0;
+	text-shadow: 0 0 20px #000, 0 0 5px #000, 1px 0 1px #000, -1px 0 1px #000, 0 1px 1px #000, 0 -1px 1px #000;
+}
+
+.grid {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+.grid .grid {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	align-content: flex-start;
+	width: 100%;
+}
+
+.grid .grid .product {
+	margin: 1em;
+	box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
+	width: calc(33% - 2em);
+}
+
+.grid .grid .product img {
+	width: 100%;
+}
+
+.grid .grid .product .title {
+	font-weight: 500;
 	padding: 0.5em;
 }
 
-#footer {
+.grid .grid .product .meta {
+	padding: 0 0.5em;
+	padding-bottom: 0.5em;
+	display: flex;
+	justify-content: space-between;
+}
+
+.grid .grid .product .price,
+.grid .grid .product .stock {
+	font-weight: 300;
+}
+
+.main .text {
+	padding: 1em;
+}
+
+.main .text img {
+	max-width: 100%;
+	max-height: 20vh;
+	margin: 1em;
+}
+
+.main .text h1 {
+	margin: 0;
+	font-weight: 300;
+}
+.main .text h2 {
+	font-weight: 400;
+}
+.main .text .btn-cart {
+	padding: 0.5em;
+	background-color: green;
+	color: white;
+	display: inline-block;
+	font-size: 1.25em;
+	font-weight: 300;
+	opacity: 0.9;
+	transition: 0.07s all;
+	margin-top: 1em;
+	cursor: pointer;
+}
+.main .text .btn-cart:hover {
+	opacity: 1;
+	transform: scale(1.2);
+}
+.main .text .btn-cart.empty {
+	background-color: gray;
+	color: lightgray;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.form > input {
+	font-size: 1.5em;
+	padding: 0.25em;
+	margin: 0.5em;
+}
+.form > button {
+	font-size: 1em;
+	padding: 0.5em;
+	margin: 0.25em;
+
+	background-color: #F34605;
+	color: white;
+	border: 0;
+	opacity: 0.9;
+	transition: 0.1s all;
+}
+
+.form > button[disabled] {
+	background-color: gray;
+}
+
+.form > button:hover {
+	opacity: 1;
+	transform: scale(1.1);
+}
+
+.log {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+
+	z-index: 1000;
+
+	box-shadow: 0 0 3em #000;
+	opacity: 0.5;
+	transition: 1s opacity;
+}
+.log:hover {
+	opacity: 1;
+}
+
+.log > div {
+	padding: 1em;
+	font-weight: 400;
+}
+
+.log .error {
+	background-color: #D00600;
+	color: white;
+}
+
+footer {
 	background-color: #333;
 	color: #DDD;
 	font-weight: 300;
-	padding: 1em;
+	padding-top: 1em;
+	padding-bottom: 1em;
 	text-align: center;
 }

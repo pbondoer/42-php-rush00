@@ -4,43 +4,39 @@
 	<head>
 		<title>Au Poil!</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function() {
+	if (document.location.pathname == '/index.html')
+		window.history.replaceState(null, 'Au Poil!', '/');
+
+	// bootstrap our main code
+	var script = document.createElement('script');
+	script.src = '/main.js';
+
+	document.head.appendChild(script);
+});
+</script>
 	</head>
 	<body>
-		<header id="header">
-			<div id="top">
+		<header>
+			<!--div class="top">
 				Au Poil!
-			</div>
-			<nav id="nav">
-				<div id="left">
-				<a class="selected" href="">Acceuil</a>
-				<a href="">Top ventes</a>
+				</div-->
+			<nav class="nav">
+				<div class="left">
+					<a class="selected" href="/">Acceuil</a>
 				</div>
-				<div id="right">
-				<a href="">S'identifier</a>
+				<div class="right">
+					<a href="/cart">Panier (0)</a>
+					<a id="login-btn" href="/login">S'identifier</a>
 				</div>
 			</nav>
 		</header>
 
-		<div id="container">
-			<aside id="sidebar">
-				<h1>Categories</h1>
-				<a href="">Long</a>
-				<a href="">Court</a>
-				<a href="">Frisé</a>
-				<a href="">Curvé</a>
-				<a href="">Poil de nez</a>
-				<a href="">Poil de barbe</a>
-				<h1>Garantie</h1>
-				<div>
-					Tous nos produits sont garantis 100% de source poilue durable.
-				</div>
-			</aside>
-			<div id="main">
-				lol
-			</div>
-		</div>
-		
-		<footer id="footer">
+		<div class="log"></div>
+		<div class="container"></div>
+
+		<footer>
 			&copy; Au Poil! - Société fictive au capital de 0,42 euros
 		</footer>
 	</body>
