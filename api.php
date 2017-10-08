@@ -45,7 +45,7 @@ function auth($mysql, $login, $passwd)
 		$usr = mysqli_fetch_assoc($users);
 		$_SESSION['login'] = $login;
 		$_SESSION['id_login'] = $usr["id"];
-		$_SESSION['cart'] = init_auth_cart($mysql, $usr["id"]);
+//		$_SESSION['cart'] = init_auth_cart($mysql, $usr["id"]);
 		mysqli_free_result($users);
 		return (encode_ret(FALSE, $login));
 	}
@@ -207,5 +207,6 @@ if (($method = $_GET["method"]) != NULL)
 			break ;
 	}
 mysqli_close($mysql);
-return (json_encode($ret));
+header("Content-Type: text/json");
+echo json_encode($ret);
 ?>
