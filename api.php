@@ -10,8 +10,10 @@ include("general_function.php");
 
 function check_cart()
 {
-	if ($_SESSION['cart'] == NULL)
+	if (!isset($_SESSION['cart']))
+	{
 		$_SESSION['cart'] = serialize(array());
+	}
 	return (unserialize($_SESSION['cart']));
 }
 
@@ -48,8 +50,7 @@ function auth($mysql, $login, $passwd)
 
 function cart($mysql)
 {
-	check_cart();
-	$cart = unserialize($_SESSION['cart']);
+	$cart = check_cart();
 	$cart_with_info = array();
 	foreach ($cart as $key => $product)
 	{
@@ -92,11 +93,12 @@ function edit_cart($mysql, $pid, $change)
 		return (encode_ret(FALSE, ""));
 	}
 	$cart = check_cart();
+//	var_dump($cart);
 	foreach ($cart as $key => &$product)
 	{
 		if ($product["id"] === $pid)
 		{
-			if ($change == 0 || ($product["count"] + $change < 0))
+			if ($change == 0 || ($product["count"] + $change <= 0))
 				unset($cart[$key]);
 			else if ($product["count"] + $change > ($max_stock = stock_id($mysql, $pid)))
 					$product["count"] = $max_stock;
@@ -112,7 +114,7 @@ function edit_cart($mysql, $pid, $change)
 	$_SESSION['cart'] = $cart;
 	if (($id = $_SESSION['id_login']) !== 0)
 		mysqli_query($mysql, "UPDATE users SET cart = '$cart' WHERE id = $id");
-	return (encode_ret(FALSE, ""));
+	return (encode_ret(FALSE, "cart change"));
 }
 
 function add_user($mysql, $login, $passwd)
